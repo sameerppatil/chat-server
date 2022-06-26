@@ -10,11 +10,12 @@ void Server::startRunning(void)
 {
     interface.startListening();
     while(1) {
-        auto peer_socket = interface.acceptConnections();
+        string client_addr;
+        auto peer_socket = interface.acceptConnections(client_addr);
         char buffer[1024];
         auto readCnt = interface.readData(buffer, peer_socket);
         printf("data%s\n", buffer);
-        interface.sendDataTo(peer_socket, "FROM SERVER");
+        interface.sendDataTo(peer_socket, "ACK");
         PLOGD << "got " << buffer << endl;
     }
 }

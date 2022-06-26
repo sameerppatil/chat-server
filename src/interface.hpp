@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <memory>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -28,7 +29,7 @@ public:
     int connectTo(string& _socket);
     int sendData(string _data);
     void startListening();
-    int acceptConnections();
+    int acceptConnections(string &peer_ip_addr);
     int readData(char *buf, int _socket);
     int readData(char *buf);
     int sendDataTo(int _socket, string msg);

@@ -52,17 +52,32 @@ int main(int argc, char** argv) {
             server.startRunning();
         }
         else {
-            PLOGD << "Running in client mode";
+            string username = "alfred";
+            PLOGD << "Running in client mode, " << username << " is logged in...";
             Client client(8111, "userA");
             auto ret = client.connectToServer("127.0.0.1");
-            if (ret != 0) {
-                ret = client.sendData("fromCLIENT");
-                assertm(ret != -1, "unable to send data to server");
-                char buffer[1024];
-                client.readData(buffer);
-                cout << "Got data from sever" << buffer << endl;
+            // if (ret != 0) {
+            //     ret = client.sendData("fromCLIENT");
+            //     assertm(ret != -1, "unable to send data to server");
+            //     char buffer[1024];
+            //     client.readData(buffer);
+            //     cout << "Got data from sever" << buffer << endl;
+                
+            // }
+            if(client.isConnectedToServer()) {
+                // register ourselves to server
+                string msg = "REG\n" + username + "\n";
+                client.sendData(msg);
+                char buf[1024];
+                client.readData(buf);
+                if(strcmp(buf, "ACK") == 0) {
+                    PLOGD << "message received by server";
+                }
+                else
+                {
+                    PLOGD << "no response from server for register request";
+                }
             }
-            // client.c
             
         }
     }

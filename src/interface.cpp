@@ -5,7 +5,9 @@
 #include <cassert>
 
 #include "interface.hpp"
-
+struct mySockAddr {
+    int a;
+};
 Interface::Interface(const string &addr_str, uint16_t port) : socket_fd{-1}, other_end_fd{-1} {
     // if addr is provided, this is likely for serer addr
     // so we need to convert the the str to address
@@ -45,6 +47,8 @@ Interface::Interface(uint16_t port, bool is_socket_passive) : socket_fd{-1}, oth
     }
     else {
         addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = INADDR_LOOPBACK;
+        // inet_pton(AF_INET, "127.0.0.0", &(addr.sin_addr));
         addr.sin_port = htons(8111);
         PLOGD << "Successfully binded ACTIVE inteface to port: " << this->port;
     }
@@ -103,9 +107,27 @@ int Interface::sendData(string _data){
     return ret;
 }
 
-int Interface::acceptConnections() {
-    PLOGD << "calling accept" << endl;
-    return accept(socket_fd, nullptr, nullptr);
+int Interface::acceptConnections(string& peer_ip_addr) {
+    struct sockaddr peer_addr;
+    socklen_t curr_addr_sz = sizeof(peer_addr);
+    PLOGD << "waiting on accept";
+    auto ret = accept(socket_fd, &peer_addr, &curr_addr_sz);
+    if(ret < 0) {
+        PLOGD << "failed to get FD for peer connection";
+    }
+    else {
+        char addr_str[INET_ADDRSTRLEN];
+        if(inet_ntop(AF_INET, &peer_addr, addr_str, INET_ADDRSTRLEN) != nullptr) {
+            // peer_ip_addr = to_string(addr_str);
+            peer_ip_addr = addr_str;
+            PLOGD << "got message from " << addr_str;
+        }
+        else {
+            PLOGD << "NULL PTR ";
+        }
+    }
+    PLOGD << "accept unblocked";
+    return ret;
 }
 
 int Interface::readData(char *buf, int _socket) {
